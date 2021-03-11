@@ -1,0 +1,196 @@
+//+------------------------------------------------------------------+
+//|                                    Sergienko_Sergey by A.GERCHIK |
+//|                        Copyright 2013, MetaQuotes Software Corp. |
+//|                                        http://www.metaquotes.net |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2013, MetaQuotes Software Corp."
+#property link      "http://www.metaquotes.net"
+
+#property indicator_chart_window
+#property indicator_buffers 1
+#property indicator_color4 DodgerBlue           //ATR
+#property indicator_color1 DimGray           //ATR colume
+#property indicator_color2 FireBrick         //PRICE
+#property indicator_color3 MediumSeaGreen         //time
+
+//--- input parameters
+
+extern int font_size=12;
+extern int ATR=5;
+
+int i, ATR_D=0;
+string order_type;
+double pips,SL_price,enter_price,TP_price,SL=20;
+bool New_Bar=false;  
+                        
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int init()
+  {
+
+   pips = Point;
+   if (Digits == 5 || Digits == 3) pips = 1.0 * pips;
+   
+for(i=1;i<=ATR; i++)
+{
+
+ATR_D=ATR_D+MathRound((iHigh(NULL,PERIOD_D1,i)-iLow(NULL,PERIOD_D1,i))/pips);
+
+}  
+ATR_D=ATR_D/ATR;
+//Alert(ATR_D);
+ 
+   return(0);
+  }
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization function                       |
+//+------------------------------------------------------------------+
+int deinit()
+{
+ObjectDelete("1");
+ObjectDelete("2");
+ObjectDelete("3");
+ObjectDelete("4");
+ObjectDelete("5");
+
+ObjectDelete("11");
+ObjectDelete("22");
+ObjectDelete("33");
+ObjectDelete("44");
+ObjectDelete("55");
+ 
+//----
+   
+//50----
+   return(0);
+  }
+  
+ 
+  
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int start()
+
+  {
+  
+   
+ int t,h,m,s;
+   t=(Time[0]+Period()*60)-CurTime();
+   
+   s=t;
+   h=round(t/3600);
+   m=s/60;
+   
+   //m=(s-(s/60))/60; 
+   
+string tt=TimeToStr(t,TIME_SECONDS);
+
+
+   ObjectCreate(0,"11",OBJ_LABEL,0,0,0);
+   ObjectCreate(0,"22",OBJ_LABEL,0,0,0);
+   ObjectCreate(0,"33",OBJ_LABEL,0,0,0);
+   //ObjectCreate(0,"44",OBJ_LABEL,0,0,0);
+   //ObjectCreate(0,"55",OBJ_LABEL,0,0,0);
+
+   ObjectCreate(0,"1",OBJ_LABEL,0,0,0);
+   ObjectCreate(0,"2",OBJ_LABEL,0,0,0);
+   ObjectCreate(0,"3",OBJ_LABEL,0,0,0);
+   //ObjectCreate(0,"4",OBJ_LABEL,0,0,0);
+   //ObjectCreate(0,"5",OBJ_LABEL,0,0,0);
+      
+   ObjectSetText("1","ATR Day(" + ATR + ") :",font_size, "Arial" , indicator_color4);   
+   ObjectSetText("2","пройдено ATR :",font_size, "Arial" , indicator_color1);   
+   ObjectSetText("3","доступно ATR :",font_size, "Arial" , indicator_color1);   
+   ObjectSetText("4","time :",font_size, "Arial" , indicator_color3);   
+   ObjectSetText("5", "Spread :", font_size, "Trebuchet MS", indicator_color2);
+ 
+   //ObjectSetText("11",DoubleToStr((iATR(NULL,PERIOD_D1,ATR,0))/pips,0),font_size, "Arial" , indicator_color1);   
+   ObjectSetText("11",ATR_D,font_size, "Arial" , indicator_color4);   
+   ObjectSetText("22",DoubleToStr(MathRound((iHigh(NULL,PERIOD_D1,0)-iLow(NULL,PERIOD_D1,0))/pips),0),font_size, "Arial" , indicator_color1);   
+   ObjectSetText("33",DoubleToStr(ATR_D - MathRound((iHigh(NULL,PERIOD_D1,0)-iLow(NULL,PERIOD_D1,0))/pips),0),font_size, "Arial" , indicator_color1);   
+   ObjectSetText("44",tt,font_size, "Arial" , indicator_color3); 
+   ObjectSetText("55",SymbolInfoInteger(Symbol(),SYMBOL_SPREAD),NULL,"Trebuchet MS", indicator_color2);
+   
+   //114 ObjectSetText("55",DoubleToStr(Bid, Digits), font_size, "Trebuchet MS", indicator_color2);
+   //ObjectSetText(name4,"Spread: "+(string)SymbolInfoInteger(Symbol(),SYMBOL_SPREAD),size,NULL,col);
+   
+            
+   ObjectSet("11", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("22", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("33", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("44", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("55", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   
+   ObjectSet("1", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("2", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("3", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("4", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   ObjectSet("5", OBJPROP_CORNER, CORNER_LEFT_LOWER);    // Привязка угол
+   
+   ObjectSetInteger(0,"11", OBJPROP_YDISTANCE, +3);// Координата Y
+   ObjectSetInteger(0,"22", OBJPROP_YDISTANCE, font_size+9);// Координата Y
+   ObjectSetInteger(0,"33", OBJPROP_YDISTANCE, (font_size+9)*2);// Координата Y
+   ObjectSetInteger(0,"44", OBJPROP_YDISTANCE, (font_size+9)*3);// Координата Y
+   ObjectSetInteger(0,"55", OBJPROP_YDISTANCE, ((font_size+9)*4)+5);// Координата Y
+   
+   ObjectSetInteger(0,"1", OBJPROP_YDISTANCE, +3);// Координата Y
+   ObjectSetInteger(0,"2", OBJPROP_YDISTANCE, (font_size+9));// Координата Y
+   ObjectSetInteger(0,"3", OBJPROP_YDISTANCE, (font_size+9)*2);// Координата Y
+   ObjectSetInteger(0,"4", OBJPROP_YDISTANCE, (font_size+9)*3);// Координата Y
+   ObjectSetInteger(0,"5", OBJPROP_YDISTANCE, ((font_size+8)*4)+5);// Координата Y
+      
+   ObjectSetInteger(0,"11", OBJPROP_XDISTANCE, 20);// Координата Х
+   ObjectSetInteger(0,"22", OBJPROP_XDISTANCE, 20);// Координата Х
+   ObjectSetInteger(0,"33", OBJPROP_XDISTANCE, 20);// Координата Х
+   ObjectSetInteger(0,"44", OBJPROP_XDISTANCE, 20);// Координата Х
+   ObjectSetInteger(0,"55", OBJPROP_XDISTANCE, 20);// Координата Х
+   
+   ObjectSetInteger(0,"1", OBJPROP_XDISTANCE, 92);// Координата Х
+   ObjectSetInteger(0,"2", OBJPROP_XDISTANCE, 92);// Координата Х
+   ObjectSetInteger(0,"3", OBJPROP_XDISTANCE, 92);// Координата Х
+   ObjectSetInteger(0,"4", OBJPROP_XDISTANCE, 92);// Координата Х
+   ObjectSetInteger(0,"5", OBJPROP_XDISTANCE, 92);// Координата Х
+   
+  //--- включим (true) или отключим (false) режим перемещения метки мышью
+   ObjectSetInteger(0,"1",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"2",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"3",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"4",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"5",OBJPROP_SELECTABLE,false);
+   
+   ObjectSetInteger(0,"11",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"22",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"33",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"44",OBJPROP_SELECTABLE,false);
+   ObjectSetInteger(0,"55",OBJPROP_SELECTABLE,false);
+      
+   ObjectSetInteger(0,"1",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"2",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"3",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"4",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"5",OBJPROP_SELECTED,false);
+   
+   ObjectSetInteger(0,"11",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"22",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"33",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"44",OBJPROP_SELECTED,false);
+   ObjectSetInteger(0,"55",OBJPROP_SELECTED,false);
+
+
+
+
+RefreshRates();
+WindowRedraw();
+ChartRedraw();
+
+//Comment(string1 + "\r\n" + string2);
+  
+
+   //----
+   return(0);
+  }
+//+------------------------------------------------------------------+
+
